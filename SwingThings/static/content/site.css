@@ -1,0 +1,100 @@
+body {
+    padding-top: 0px;
+    padding-bottom: 15px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding: 15px;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+/* Application styles */
+
+
+.playlist {
+    vertical-align: top;
+    position: relative;
+    display: inline-block;
+    text-align: center;
+    width: 200px;
+    height: 300px;
+    margin: 20px;
+    background-color:darkgray;
+}
+
+    .playlist img {
+        width: 200px;
+        height: auto;
+    }
+
+.playlist-overlay-text {
+    opacity: 0;
+    width: 200px;
+    height: auto;
+    color: white;
+    font-size: 20px;
+    height: auto;
+    position: absolute;
+    left: 0%;
+    top: 20%;
+    text-align: center;
+    overflow-wrap: break-word;
+}
+
+.playlist:hover .playlist-icon {
+    filter: grayscale(50%);
+    opacity: .8;
+}
+
+.playlist:hover .playlist-overlay-text {
+    opacity: 1;
+}
+
+
+.playlist-info {
+    display: block;
+    margin-top: 5px;
+    text-align: left;
+}
+
+
+.no-selections {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
+
+/* styles for validation helpers */
+.field-validation-error {
+    color: #b94a48;
+}
+
+.field-validation-valid {
+    display: none;
+}
+
+input.input-validation-error {
+    border: 1px solid #b94a48;
+}
+
+input[type="checkbox"].input-validation-error {
+    border: 0 none;
+}
+
+.validation-summary-errors {
+    color: #b94a48;
+}
+
+.validation-summary-valid {
+    display: none;
+}

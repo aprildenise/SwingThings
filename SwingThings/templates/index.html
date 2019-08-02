@@ -1,0 +1,193 @@
+﻿{% extends "layout.html" %}
+{% block content %}
+
+<div class="jumbotron" id="front">
+    <h1 class="display-4">Swing Things - tools for WCS</h1>
+    <p class="lead">is a collection of apps to help west coast swing dancers organize their Spotify playlist.</p>
+    <hr class="my-4">
+    <p>Want to know the BPM of each song in your playlist? Looking to make the perfect WCS party?</p>
+    <p class="lead">
+        <a href="/login" class="btn btn-outline-primary">Log in with Spotify to get started! &raquo;</a>
+        <a href="/user" class="btn btn-outline-primary">Test link to /user &raquo;</a>
+        <a href="/playlists" class="btn btn-outline-primary">Test link to /playlists &raquo;</a>
+    </p>
+</div>
+
+<div id="playlists_list">
+    <!--Playlist test template-->
+
+     <!--<span class="playlist">
+        <img src="https://i.pinimg.com/originals/5a/0f/46/5a0f46b121771ae113666f287864c50e.png" class="playlist-icon no-selections" alt="Playlist icon">
+        <span class="playlist-overlay-text no-selections">Dance with this playlist</span>
+        <span class="playlist-info">
+            <p style="display:inline">
+                <strong>title of playlist</strong>
+                <small>
+                    description of playlist
+                    <em>number of tracks</em>
+                </small>
+            </p>
+        </span>
+    </span>--> 
+
+
+</div>
+
+
+
+<script type="text/javascript">
+
+
+    var playlists = new Array();
+    var receivedToken = false;
+    var displayedPlaylists = true;
+    var offset = 0;
+
+    function parseQuery() {
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for (var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
+    }
+
+
+    function getTokenFromURL() {
+        var url = window.location.href;
+        if (url.includes("access_token")) {
+            var index = url.indexOf("=") + 1;
+            var token = url.substring(index);
+            //alert(token);
+            return token;
+        }
+        else {
+            return null;
+        }
+    }
+
+
+    function getPlaylistTracks(playlistIndex) {
+        // Get the ID of the playlist selected
+        var playlistID = playlists[playlistIndex]["id"].toString();
+
+        // Make a request to get the tracks from the selected playlist
+        const url = "https://api.spotify.com/v1/playlists/" + playlistID + "/tracks";
+        var totalTracks = playlists[playlistIndex]["tracks"]["total"];
+        var tracks = 0;
+        var token = getTokenFromURL();
+
+
+        //test
+        window.location.replace('/playlist_info/' + playlistID + '/' + totalTracks);
+        return;
+        
+        var loops = Math.ceil(totalTracks / 100);
+        for (var i = 0; i < loops; i++) {
+            $.ajax({
+                url: url,
+                //async: false,
+                headers: { 'Authorization': 'Bearer ' + token },
+                data: {
+                    "fields": "items(track(name, popularity, id, explicit, album, artists))",
+                    "offset": offset
+                },
+                type: "GET",
+                success: AddOffset,
+                success: function (result) {
+                    console.log(result);
+                    console.log("before operation:" + offset);
+                    var tracksReceived = result["items"].length;
+                    offset += tracksReceived - 1;
+                    console.log("after operation:" + offset);
+                },
+                error: function (error) {
+                    console.log(error);
+                    moreTracks = false;
+                }
+            });
+        }
+    }
+
+    function AddOffset(result) {
+
+    }
+
+    function renderPlaylists(data) {
+        // test
+        $("#front").hide();
+        //console.log(data["items"]);
+        
+        $.map(data["items"], function (val, i) {
+            // Add the data to the global playlists var
+            playlists.push(val);
+
+            // Add html to the page for each playlist
+            $("#playlists_list").append(`
+                <span class="playlist" data-playlist-index=${i}>
+                    <img src=${val["images"][0]["url"]} class="playlist-icon no-selections" alt="Playlist icon">
+                    <span class="playlist-overlay-text no-selections">Dance with this playlist</span>
+                    <span class="playlist-info">
+                    <p style="display:inline">
+                        <strong>${val["name"]}</strong>
+                        <small></br>
+                        by ${val["owner"]["display_name"]}</br>
+                        <em>${val["tracks"]["total"]} tracks</em>
+                        </small>
+                    </p>
+                    </span>
+                </span> 
+            `);
+        })
+        displayedPlaylists = true;
+
+    }
+
+
+
+
+
+    $(document).ready(function () {
+
+        
+        // Check if the playlists are displayed
+        if (displayedPlaylists) {
+            // Check for click
+            $("#playlists_list").on("click", ".playlist", function () {
+                console.log("clicked a playlist");
+
+                // Display the tracks of the playlist
+                var playlistIndex = parseInt($(this).attr("data-playlist-index"));
+                getPlaylistTracks(playlistIndex);
+
+            });
+        }
+
+        // Check if the user has received an access token
+        if (!receivedToken) {
+            var token = getTokenFromURL();
+            if (token) {
+                // Received token, show the user their playlists
+                receivedToken = true;
+                // First get the playlist information
+                var request = new XMLHttpRequest();
+                var url = '/playlists'; //Use the route /playlists to get it
+                request.open('GET', url);
+                request.onload = function () {
+                    var data = JSON.parse(request.responseText);
+                    // display the playlists on the page
+                    renderPlaylists(data);
+                };
+                request.send();
+            }
+            else {
+                //alert("awww.");
+            }
+        }
+    });
+
+</script>
+
+{% endblock %}
